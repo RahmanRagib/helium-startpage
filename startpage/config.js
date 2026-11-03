@@ -45,7 +45,7 @@ window.CONFIG = {
         hideClock: true,
         hideDate: true,
         hideSeparator: true,
-        hideLinks: false,
+        hideLinks: true,
         themeView: 'grid', // 'grid' | 'dropdown'
         // Hover Underline Customization
         underlineStyle: 'dither', // 'dither' | 'solid' | 'dashed' | 'dotted' | 'double' | 'none'
