@@ -51,6 +51,26 @@ if (-not (Test-Path $helium)) {
     Write-Warning 'Helium not found at its standard install path - shortcuts still patched; verify Helium is installed.'
 }
 
+# 4b. external-link launches (http/https protocol handlers) get the flag too -
+#     Windows IDs change when the app re-asserts them (HeliumHTM.<random>), so
+#     resolve the current ProgId each run. Idempotent.
+$flag = '--custom-ntp="' + $pageUrl + '"'
+foreach ($proto in 'http','https') {
+    $progid = (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\$proto\UserChoice" -ErrorAction SilentlyContinue).ProgId
+    if (-not $progid) { continue }
+    $cmdKey = "HKCU:\Software\Classes\$progid\shell\open\command"
+    $cmd = (Get-ItemProperty $cmdKey -ErrorAction SilentlyContinue).'(default)'
+    if (-not $cmd) { continue }
+    $new = ($cmd -replace '--custom-ntp="[^"]*" ?', '').Trim()
+    if ($new -notmatch 'custom-ntp=') {
+        $new = ($new -replace '(\s*--single-argument.*)', " $flag`$1")
+        Set-ItemProperty -Path $cmdKey -Name '(Default)' -Value $new
+        Write-Host "[ok] $proto handler patched"
+    } else {
+        Write-Host "[ok] $proto handler already patched"
+    }
+}
+
 if (-not (Get-Command robocopy -ErrorAction SilentlyContinue)) { }
 
 Write-Host ''

@@ -27,4 +27,18 @@ foreach ($root in $linkRoots) {
 # 2. remove the installed page (leave $here\startpage untouched - that is the source of truth)
 Remove-Item (Join-Path $env:LOCALAPPDATA 'Helium-Start') -Recurse -Force
 Write-Host '[removed] %LOCALAPPDATA%\Helium-Start'
+
+# 2b. strip the flag from http/https protocol handlers
+foreach ($proto in 'http','https') {
+    $progid = (Get-ItemProperty "HKCU:\Software\Microsoft\Windows\Shell\Associations\UrlAssociations\$proto\UserChoice" -ErrorAction SilentlyContinue).ProgId
+    if (-not $progid) { continue }
+    $cmdKey = "HKCU:\Software\Classes\$progid\shell\open\command"
+    $cmd = (Get-ItemProperty $cmdKey -ErrorAction SilentlyContinue).'(default)'
+    if (-not $cmd) { continue }
+    $new = ($cmd -replace '--custom-ntp="[^"]*" ?', '').Trim()
+    if ($new -ne $cmd) {
+        Set-ItemProperty -Path $cmdKey -Name '(Default)' -Value $new
+        Write-Host "[reverted] $proto handler"
+    }
+}
 Write-Host 'done. Helium returns to its stock new tab page on next full restart.'
