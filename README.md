@@ -24,9 +24,10 @@ What it does: copies `startpage/` to `%LOCALAPPDATA%\Helium-Start` and appends
 (Start Menu, Desktop, taskbar). Idempotent - rerunning never duplicates the
 flag. `run-uninstall.cmd` reverts everything.
 
-Tip: for immunity on any launch path (e.g. bare exe), also set it once in
-`chrome://flags` → search "Custom New Tab Page" → the same
-`file:///C:/Users/<you>/AppData/Local/Helium-Start/index.html` URL → Relaunch.
+Tip: rerunning `setup.ps1` after an update also covers links opened from other
+apps - it patches the http/https protocol handlers too, so a cold-start from an
+external link loads the startpage. (Clients of setup versions before this
+feature: rerun setup once to pick it up.)
 
 ## Install - Linux
 
